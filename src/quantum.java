@@ -21,6 +21,7 @@ class quantum {
     private static int INDEX_M = 1; // the index of nput quantum states to process.
     private static int INDEX_WIRE_1 = 2; // the index of Wire 1
     private static int INDEX_WIRE_2 = 3; // the index of Wire 2
+    private static int INDEX_DATA_0 = 4; // data start.
     
     private static char CMD_IDENT = '-'; // - Identity (single qubit).
     private static char CMD_NOT = 'X';   // X Not (single qubit).
@@ -47,7 +48,8 @@ class quantum {
         strWire2 = list.get(INDEX_WIRE_2);
         varNumofCalucate = strWire1.length();
         
-        // System.out.println(list);
+        
+        System.out.println(list.size());
         return;
     }
 
