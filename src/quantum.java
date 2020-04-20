@@ -21,13 +21,8 @@ import java.util.Scanner;
 import java.lang.String;
 import java.util.Arrays;
 
-import org.ujmp.core.*;
-// import org.ujmp.core.Matrix;
-
-// import Jama.Matrix;
-
-
 import java.util.*;
+import java.math.*;
 
 class quantum {
     
@@ -43,6 +38,7 @@ class quantum {
     private static int INDEX_WIRE_1 = 2; // the index of Wire 1
     private static int INDEX_WIRE_2 = 3; // the index of Wire 2
     private static int INDEX_DATA_0 = 4; // data start.
+    private static int LENGTH_MATIX = 4; // 2 qubit length 
     
     private static char CMD_IDENT = '-'; // - Identity (single qubit).
     private static char CMD_NOT = 'X';   // X Not (single qubit).
@@ -51,10 +47,42 @@ class quantum {
     private static char CMD_HADMARD ='H';// H Hadamard (single qubit).
     private static char CMD_CONBIT ='.'; // . Control bit.
     private static char CMD_TARBIT = '+';// + Target bit.
+
+    
+
+    private static double [][] standard_Matrix_X = {};
+    private static double [][] standard_Matrix_Z = {};
+    private static double [][] standard_Matrix_Y = {};
+    private static double [][] standard_Matrix_H = {};
+    
+    private static double [][] standard_Matrix_0 = {{0},{1}};
+    private static double [][] standard_Matrix_1 = {{1},{0}};
     
     //
     // Private Functions
     //
+    // private static double[] funcSignleStageCal () {
+
+
+    // }
+
+    private static double[] funcDoCaclulate2Qbit (
+        String instr1,
+        String instr2,
+        int numInstr,
+        double[] data
+    ){
+        double [] result = new double [4];
+
+        for (int count = 0; count < numInstr; count++) {
+            if (data[count] == 0) {
+                break;
+            }
+
+        }
+        return result;
+    }
+
     private static void funcProcessIntroductions (List<String> list) {
         int varT;
         int varM;
@@ -70,10 +98,55 @@ class quantum {
         varNumofCalucate = strWire1.length();
         
         
-        System.out.println(list.size());
+        System.out.println("size : " +list.size());
+        System.out.println("T : " +varT);
+        System.out.println("M : " +varM);
+        System.out.println("strWire1 : " +strWire1);
+        System.out.println("strWire2 : " +strWire2);
+
+        double [][] inputData = new double [varM][LENGTH_MATIX];
+        double [] tempData = new double [LENGTH_MATIX];
+        double [][] outputData = new double [varM][LENGTH_MATIX];
+        
+        // restore data in to martix
+        for (int count = 0; count < varM; count++) {
+            for (int count2 = 0; count2 < LENGTH_MATIX; count2++) {
+                inputData[count][count2] = Double.valueOf(list.get(INDEX_DATA_0 * (count + 1) +count2));
+                tempData [count2] = Double.valueOf(list.get(INDEX_DATA_0 * (count + 1) +count2)); 
+            }
+            tempData = funcDoCaclulate2Qbit (
+                strWire1,
+                strWire2,
+                varT,
+                tempData
+            );
+            
+            // restore data back to the final data.
+            for (int count2 = 0; count2 < LENGTH_MATIX; count2++) {
+                outputData[count][count2] = tempData [count2];
+            }
+        }
+
+
         return;
     }
+    
+    //
+    // M1 matix is the formula matrix 2x2
+    // M2 is the input data martix 2x1 
+    //
+    private double[][] matrixtensor(double[][] m1, double[][] m2) {
+        double [][] matrixResult = new double [1][2];
+        //
+        // due to the behavior of assignment 2, we know there will be only 2x2 matrix as the input.
+        // therefore, this functionality is built by hardcode calculation
+        //
 
+        matrixResult [0][0] = m1[0][0]*m2[0][0] + m1[0][1]*m2[0][1];
+        matrixResult [0][1] = m1[1][0]*m2[0][0] + m1[1][1]*m2[0][1];
+
+        return matrixResult; 
+    }
 
     //
     // Public 
