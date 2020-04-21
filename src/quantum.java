@@ -50,10 +50,18 @@ class quantum {
 
     
 
-    private static double [][] standard_Matrix_X = {};
-    private static double [][] standard_Matrix_Z = {};
-    private static double [][] standard_Matrix_Y = {};
-    private static double [][] standard_Matrix_H = {};
+    private static double [][] standard_Matrix_X = {{0,1}, 
+                                                    {1,0}};
+
+    private static double [][] standard_Matrix_Z = {{1,0}, 
+                                                    {0,-1}};
+
+    private static double [][] standard_Matrix_Y = {{0,-1}, 
+                                                    {1,0}};
+
+    private static double [][] standard_Matrix_H = {{0.7071,0.7071}, 
+                                                    {0.7071,-0.7071}};
+    
     
     private static double [][] standard_Matrix_0 = {{0},{1}};
     private static double [][] standard_Matrix_1 = {{1},{0}};
@@ -66,6 +74,8 @@ class quantum {
 
     // }
 
+    // private static double[]
+
     private static double[] funcDoCaclulate2Qbit (
         String instr1,
         String instr2,
@@ -74,12 +84,11 @@ class quantum {
     ){
         double [] result = new double [4];
 
-        for (int count = 0; count < numInstr; count++) {
-            if (data[count] == 0) {
-                break;
-            }
+        // for (int count = 0; count < numInstr; count++) {
 
-        }
+        //     }
+
+        
         return result;
     }
 
@@ -114,6 +123,7 @@ class quantum {
                 inputData[count][count2] = Double.valueOf(list.get(INDEX_DATA_0 * (count + 1) +count2));
                 tempData [count2] = Double.valueOf(list.get(INDEX_DATA_0 * (count + 1) +count2)); 
             }
+
             tempData = funcDoCaclulate2Qbit (
                 strWire1,
                 strWire2,
@@ -123,7 +133,7 @@ class quantum {
             
             // restore data back to the final data.
             for (int count2 = 0; count2 < LENGTH_MATIX; count2++) {
-                outputData[count][count2] = tempData [count2];
+                outputData[count][count2] = te mpData [count2];
             }
         }
 
@@ -147,6 +157,47 @@ class quantum {
 
         return matrixResult; 
     }
+
+        // rowa and cola are no of rows and columns 
+    // of matrix A 
+    // rowb and colb are no of rows and columns 
+    // of matrix B 
+    private static int cola = 2, rowa = 3, colb = 3, rowb = 2; 
+      
+    // Function to computes the Kronecker Product 
+    // of two matrices 
+    private static void Kroneckerproduct(int A[][], int B[][]) 
+    { 
+      
+        int[][] C= new int[rowa * rowb][cola * colb]; 
+      
+        // i loops till rowa 
+        for (int i = 0; i < rowa; i++)  
+        { 
+      
+            // k loops till rowb 
+            for (int k = 0; k < rowb; k++) 
+            { 
+      
+                // j loops till cola 
+                for (int j = 0; j < cola; j++)  
+                { 
+      
+                    // l loops till colb 
+                    for (int l = 0; l < colb; l++) 
+                    { 
+      
+                        // Each element of matrix A is 
+                        // multiplied by whole Matrix B 
+                        // resp and stored as Matrix C 
+                        C[i + l + 1][j + k + 1] = A[i][j] * B[k][l]; 
+                        System.out.print( C[i + l + 1][j + k + 1]+" "); 
+                    } 
+                } 
+                System.out.println(); 
+            } 
+        } 
+    } 
 
     //
     // Public 
