@@ -33,6 +33,11 @@ class quantum {
     //
     // Private global variables
     //
+    private static boolean MSG_DEBUG = true;
+    private static boolean MSG_DEBUG_MAIN = false;
+    private static boolean MSG_DEBUG_KRON = false;
+
+
     private static int INDEX_T = 0; // the index of T colum
     private static int INDEX_M = 1; // the index of nput quantum states to process.
     private static int INDEX_WIRE_1 = 2; // the index of Wire 1
@@ -48,7 +53,8 @@ class quantum {
     private static char CMD_CONBIT ='.'; // . Control bit.
     private static char CMD_TARBIT = '+';// + Target bit.
 
-    
+    private static double [][] standard_Matrix_I = {{1,0}, 
+                                                    {0,1}};
 
     private static double [][] standard_Matrix_X = {{0,1}, 
                                                     {1,0}};
@@ -106,12 +112,14 @@ class quantum {
         strWire2 = list.get(INDEX_WIRE_2);
         varNumofCalucate = strWire1.length();
         
-        
-        System.out.println("size : " +list.size());
-        System.out.println("T : " +varT);
-        System.out.println("M : " +varM);
-        System.out.println("strWire1 : " +strWire1);
-        System.out.println("strWire2 : " +strWire2);
+        if (MSG_DEBUG == true) {
+            System.out.println("size : " +list.size());
+            System.out.println("T : " +varT);
+            System.out.println("M : " +varM);
+            System.out.println("strWire1 : " +strWire1);
+            System.out.println("strWire2 : " +strWire2);
+        }
+
 
         double [][] inputData = new double [varM][LENGTH_MATIX];
         double [] tempData = new double [LENGTH_MATIX];
@@ -133,7 +141,7 @@ class quantum {
             
             // restore data back to the final data.
             for (int count2 = 0; count2 < LENGTH_MATIX; count2++) {
-                outputData[count][count2] = te mpData [count2];
+                outputData[count][count2] = tempData [count2];
             }
         }
 
@@ -142,34 +150,38 @@ class quantum {
     }
     
     //
-    // M1 matix is the formula matrix 2x2
-    // M2 is the input data martix 2x1 
+    // M1 matix is the formula matrix 4x4
+    // M2 is the input data martix 4x1 
     //
-    private double[][] matrixtensor(double[][] m1, double[][] m2) {
-        double [][] matrixResult = new double [1][2];
+    private static double[] matrixtensor(double[][] m1, double[] m2) {
+        double [] matrixResult = new double [4];
         //
         // due to the behavior of assignment 2, we know there will be only 2x2 matrix as the input.
         // therefore, this functionality is built by hardcode calculation
         //
 
-        matrixResult [0][0] = m1[0][0]*m2[0][0] + m1[0][1]*m2[0][1];
-        matrixResult [0][1] = m1[1][0]*m2[0][0] + m1[1][1]*m2[0][1];
+        matrixResult [0] = m2[0]*m1[0][0] + m2[1]*m1[0][1] + m2[2]*m1[0][2] + m2[3]*m1[0][3];
+        matrixResult [1] = m2[0]*m1[1][0] + m2[1]*m1[1][1] + m2[2]*m1[1][2] + m2[3]*m1[1][3];
+        matrixResult [2] = m2[0]*m1[2][0] + m2[1]*m1[2][1] + m2[2]*m1[2][2] + m2[3]*m1[2][3];
+        matrixResult [3] = m2[0]*m1[3][0] + m2[1]*m1[3][1] + m2[2]*m1[3][2] + m2[3]*m1[3][3];
 
         return matrixResult; 
     }
 
-        // rowa and cola are no of rows and columns 
+    // rowa and cola are no of rows and columns 
     // of matrix A 
     // rowb and colb are no of rows and columns 
     // of matrix B 
-    private static int cola = 2, rowa = 3, colb = 3, rowb = 2; 
+    private static int cola = 2, rowa = 2, colb = 2, rowb = 2; 
       
     // Function to computes the Kronecker Product 
     // of two matrices 
-    private static void Kroneckerproduct(int A[][], int B[][]) 
+    private static double[][] Kroneckerproduct(double A[][], double B[][]) 
     { 
       
-        int[][] C= new int[rowa * rowb][cola * colb]; 
+        double[][] C= new double[rowa * rowb][cola * colb]; 
+        List<Double> listC = new ArrayList<Double>();
+        double[][] result = new double[rowa * rowb][cola * colb]; 
       
         // i loops till rowa 
         for (int i = 0; i < rowa; i++)  
@@ -191,14 +203,75 @@ class quantum {
                         // multiplied by whole Matrix B 
                         // resp and stored as Matrix C 
                         C[i + l + 1][j + k + 1] = A[i][j] * B[k][l]; 
-                        System.out.print( C[i + l + 1][j + k + 1]+" "); 
+                        listC.add (A[i][j] * B[k][l]);
+                        if (MSG_DEBUG && MSG_DEBUG_KRON) {
+                            System.out.print((i + l + 1) + " " + (j + k + 1)+" "); 
+                            // System.out.print( C[i + l + 1][j + k + 1]+" "); 
+                        }
+                        
                     } 
                 } 
+
+                if (MSG_DEBUG == true) {
                 System.out.println(); 
+                }
+                
             } 
         } 
+        return funcTranslateKronMatrix(C, listC);
     } 
 
+    private static double [][] funcTranslateKronMatrix(double[][] input, List<Double> listC) {
+        double[][] result = new double[rowa * rowb][cola * colb]; 
+
+        //
+        // reorganise the address of kron produce to normal address of 4x4 matrix
+        //
+        // result [0][0] = input[1][1];
+        // result [0][1] = input[2][1];
+        // result [0][2] = input[1][2];
+        // result [0][3] = input[2][2];
+
+        // result [1][0] = input[1][2];
+        // result [1][1] = input[2][2];
+        // result [1][2] = input[1][3];
+        // result [1][3] = input[2][3];
+
+        // result [2][0] = input[2][1];
+        // result [2][1] = input[3][1];
+        // result [2][2] = input[2][2];
+        // result [2][3] = input[3][2];
+
+        // result [3][0] = input[2][2];
+        // result [3][1] = input[3][2];
+        // result [3][2] = input[2][3];
+        // result [3][3] = input[3][3];
+
+        result [0][0] = listC.get(0);
+        result [0][1] = listC.get(1);
+        result [0][2] = listC.get(2);
+        result [0][3] = listC.get(3);
+
+        result [1][0] = listC.get(4);
+        result [1][1] = listC.get(5);
+        result [1][2] = listC.get(6);
+        result [1][3] = listC.get(7);
+
+        result [2][0] = listC.get(8);
+        result [2][1] = listC.get(9);
+        result [2][2] = listC.get(10);
+        result [2][3] = listC.get(11);
+
+        result [3][0] = listC.get(12);
+        result [3][1] = listC.get(13);
+        result [3][2] = listC.get(14);
+        result [3][3] = listC.get(15);
+
+
+        return result;
+    }
+
+    
     //
     // Public 
     //
@@ -207,6 +280,7 @@ class quantum {
         File file = new File(strs[0]);
         int varIndex = 0;
         Scanner scanner = new Scanner(file);
+        double[][] C= new double[rowa * rowb][cola * colb]; 
         
         System.out.println("quantum");
 
@@ -221,8 +295,37 @@ class quantum {
 
         // //print out the list
         // System.out.println(list);
+        double A[][] = { { 1, 2 }, 
+                         { 3, 0 },  
+                        }; 
+          
+        double B[][] = { { 1, 0 }, 
+                         { 0, 1 } }; 
+
+        double data [] = {0.6962, 0.1234, 0.6962, 0.1234};
+
+        C = Kroneckerproduct(standard_Matrix_H, standard_Matrix_I);  
+        data = matrixtensor (C, data);
+        for (int count =0; count < data.length; count++) {
+            System.out.println (data[count] + " ");
+        }
+
         
-        
+        //
+        // debug
+        //
+        if (MSG_DEBUG && MSG_DEBUG_MAIN) {
+            System.out.println();
+            for(int count = 0; count < 4; count++) {
+                for (int count1 = 0; count1 < 4; count1++) {
+                    // System.out.print(count + " "+ count1 +" ");
+                    System.out.print(C[count][count1]+ " ");
+                    
+                }
+                System.out.println();
+            }
+        }
+
         
         return;
     }
