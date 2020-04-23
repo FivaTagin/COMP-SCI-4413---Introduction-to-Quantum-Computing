@@ -50,6 +50,7 @@ class quantum {
     private static char CMD_PSHIFT = 'Z';// Z Phase shift (single qubit).
     private static char CMD_NPSHIFT ='Y';// Y Negation and phase shift (single qubit).
     private static char CMD_HADMARD ='H';// H Hadamard (single qubit).
+
     private static char CMD_CONBIT ='.'; // . Control bit.
     private static char CMD_TARBIT = '+';// + Target bit.
 
@@ -67,6 +68,11 @@ class quantum {
 
     private static double [][] standard_Matrix_H = {{0.7071,0.7071}, 
                                                     {0.7071,-0.7071}};
+
+    private static double [][] standard_Matrix_CNOT = {{1, 0, 0, 0}, 
+                                                       {0, 1, 0, 0},
+                                                       {0, 0, 0, 1},
+                                                       {0, 0, 1, 0}};                                                
     
     
     private static double [][] standard_Matrix_0 = {{0},{1}};
@@ -75,10 +81,72 @@ class quantum {
     //
     // Private Functions
     //
-    // private static double[] funcSignleStageCal () {
+    private static double[] funcSignleStageCal (char gate1, char gate2, double[] data) {
+        double[] result = new double [4];
+
+        double[][] mGate1 = new double [2][2];
+        double[][] mGate2 = new double [2][2];
+        double[][] C= new double[rowa * rowb][cola * colb]; 
+
+        result = data;
+
+        if (gate1 == CMD_CONBIT || gate2 == CMD_CONBIT) {
+
+        } else {
+            //other case without control bit and set bit
+            switch (gate1) {
+                case '-':
+                 mGate1 = standard_Matrix_I;
+                break;
+                case 'X':
+                 mGate1 = standard_Matrix_X;
+                break;                
+                case 'Z':
+                 mGate1 = standard_Matrix_Z;
+                break;
+                case 'Y':
+                 mGate1 = standard_Matrix_Y;
+                break;    
+                case 'H': 
+                 mGate1 = standard_Matrix_H;
+
+                break;
+
+                default:
+                
+            }
+            switch (gate2) {
+                case '-':
+                mGate2 = standard_Matrix_I;
+                break;
+                case 'X':
+                mGate2 = standard_Matrix_X;
+                break;                
+                case 'Z':
+                mGate2 = standard_Matrix_Z;
+                break;
+                case 'Y':
+                mGate2 = standard_Matrix_Y;
+                break;    
+                case 'H': 
+                mGate2 = standard_Matrix_H;
+
+                break;
+
+                default:
+                
+            }
+            // reach the result of this stage
+            C = Kroneckerproduct(mGate1, mGate2);  
+            // data = matrixtensor (C, data);
+            result = matrixtensor (C, result);
+
+        }
+
+        return result;
 
 
-    // }
+    }
 
     // private static double[]
 
@@ -89,10 +157,13 @@ class quantum {
         double[] data
     ){
         double [] result = new double [4];
+        result = data;
 
-        // for (int count = 0; count < numInstr; count++) {
-
-        //     }
+        for (int count = 0; count < numInstr; count++) {
+            result = funcSignleStageCal (instr1.charAt(count), 
+                                         instr2.charAt(count),
+                                         result);
+        }
 
         
         return result;
@@ -179,9 +250,9 @@ class quantum {
     private static double[][] Kroneckerproduct(double A[][], double B[][]) 
     { 
       
-        double[][] C= new double[rowa * rowb][cola * colb]; 
+        // double[][] C= new double[rowa * rowb][cola * colb]; 
         List<Double> listC = new ArrayList<Double>();
-        double[][] result = new double[rowa * rowb][cola * colb]; 
+
       
         // i loops till rowa 
         for (int i = 0; i < rowa; i++)  
@@ -202,7 +273,7 @@ class quantum {
                         // Each element of matrix A is 
                         // multiplied by whole Matrix B 
                         // resp and stored as Matrix C 
-                        C[i + l + 1][j + k + 1] = A[i][j] * B[k][l]; 
+                        // C[i + l + 1][j + k + 1] = A[i][j] * B[k][l]; 
                         listC.add (A[i][j] * B[k][l]);
                         if (MSG_DEBUG && MSG_DEBUG_KRON) {
                             System.out.print((i + l + 1) + " " + (j + k + 1)+" "); 
@@ -212,40 +283,22 @@ class quantum {
                     } 
                 } 
 
-                if (MSG_DEBUG == true) {
+                if (MSG_DEBUG && MSG_DEBUG_KRON) {
                 System.out.println(); 
                 }
                 
             } 
         } 
-        return funcTranslateKronMatrix(C, listC);
+        return funcTranslateKronMatrix(listC);
     } 
 
-    private static double [][] funcTranslateKronMatrix(double[][] input, List<Double> listC) {
+    private static double [][] funcTranslateKronMatrix( List<Double> listC) {
         double[][] result = new double[rowa * rowb][cola * colb]; 
 
         //
         // reorganise the address of kron produce to normal address of 4x4 matrix
         //
-        // result [0][0] = input[1][1];
-        // result [0][1] = input[2][1];
-        // result [0][2] = input[1][2];
-        // result [0][3] = input[2][2];
 
-        // result [1][0] = input[1][2];
-        // result [1][1] = input[2][2];
-        // result [1][2] = input[1][3];
-        // result [1][3] = input[2][3];
-
-        // result [2][0] = input[2][1];
-        // result [2][1] = input[3][1];
-        // result [2][2] = input[2][2];
-        // result [2][3] = input[3][2];
-
-        // result [3][0] = input[2][2];
-        // result [3][1] = input[3][2];
-        // result [3][2] = input[2][3];
-        // result [3][3] = input[3][3];
 
         result [0][0] = listC.get(0);
         result [0][1] = listC.get(1);
@@ -304,8 +357,9 @@ class quantum {
 
         double data [] = {0.6962, 0.1234, 0.6962, 0.1234};
 
-        C = Kroneckerproduct(standard_Matrix_H, standard_Matrix_I);  
-        data = matrixtensor (C, data);
+        // C = Kroneckerproduct(standard_Matrix_H, standard_Matrix_I);  
+        // data = matrixtensor (C, data);
+        data = funcSignleStageCal ('H','-', data);
         for (int count =0; count < data.length; count++) {
             System.out.println (data[count] + " ");
         }
