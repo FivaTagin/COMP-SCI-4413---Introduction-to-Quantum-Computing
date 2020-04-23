@@ -72,15 +72,47 @@ class quantum {
     private static double [][] standard_Matrix_CNOT = {{1, 0, 0, 0}, 
                                                        {0, 1, 0, 0},
                                                        {0, 0, 0, 1},
-                                                       {0, 0, 1, 0}};                                                
+                                                       {0, 0, 1, 0}};   
+    private static double [][] standard_Matrix_NOTC = {{1, 0, 0, 0}, 
+                                                       {0, 0, 0, 1},
+                                                       {0, 0, 1, 0},
+                                                       {0, 1, 0, 0}};    
+
+    private static double [][] standard_Matrix      = {{1, 0, 0, 0}, 
+                                                       {0, 1, 0, 0},
+                                                       {0, 0, 1, 0},
+                                                       {0, 0, 0, 1}};       
     
-    
-    private static double [][] standard_Matrix_0 = {{0},{1}};
-    private static double [][] standard_Matrix_1 = {{1},{0}};
-    
+
     //
     // Private Functions
     //
+    private static double[][] funcGetSetMatrix (char gate) {
+            double [][] result = new double[2][2];
+        switch (gate) {
+            case '-':
+            result = standard_Matrix_I;
+            break;
+            case 'X':
+            result = standard_Matrix_X;
+            break;                
+            case 'Z':
+            result = standard_Matrix_Z;
+            break;
+            case 'Y':
+            result = standard_Matrix_Y;
+            break;    
+            case 'H': 
+            result = standard_Matrix_H;
+
+            break;
+
+            default:
+            
+        }
+        return result;
+    }
+
     private static double[] funcSignleStageCal (char gate1, char gate2, double[] data) {
         double[] result = new double [4];
 
@@ -91,6 +123,49 @@ class quantum {
         result = data;
 
         if (gate1 == CMD_CONBIT || gate2 == CMD_CONBIT) {
+            if (gate1 == CMD_CONBIT && gate2 == CMD_TARBIT) {
+                //swap 3 and 4
+                // double temp = 0.0;
+                // temp = result[2];
+                // result [2] = result [3];
+                // result [3] = temp;
+                result = matrixtensor (standard_Matrix_CNOT, result);
+                
+            } else if (gate2 == CMD_CONBIT && gate1 == CMD_TARBIT) {
+                //swap 2 and 4
+                // double temp = 0.0;
+                // temp = result[1];
+                // result [1] = result [3];
+                // result [3] = temp;
+                result = matrixtensor (standard_Matrix_NOTC, result);
+                
+
+            } else if (gate1 == CMD_CONBIT){
+               
+                double [][] tempMatrix = standard_Matrix;
+                double [][] tempMatrix2 = new double[2][2];
+                tempMatrix2 = funcGetSetMatrix (gate2);
+                tempMatrix [2][2] = tempMatrix2[0][0];
+                tempMatrix [2][3] = tempMatrix2[0][1];
+                tempMatrix [3][2] = tempMatrix2[1][0];
+                tempMatrix [3][3] = tempMatrix2[1][1];
+                result = matrixtensor (tempMatrix, result);
+
+
+            } else if (gate2 == CMD_CONBIT) {
+
+                
+                double [][] tempMatrix = standard_Matrix;
+                double [][] tempMatrix2 = new double[2][2];
+                tempMatrix2 = funcGetSetMatrix (gate1);
+                tempMatrix [1][1] = tempMatrix2[0][0];
+                tempMatrix [1][3] = tempMatrix2[0][1];
+                tempMatrix [3][1] = tempMatrix2[1][0];
+                tempMatrix [3][3] = tempMatrix2[1][1];
+                result = matrixtensor (tempMatrix, result);
+                
+
+            }
 
         } else {
             //other case without control bit and set bit
@@ -172,7 +247,6 @@ class quantum {
     private static void funcProcessIntroductions (List<String> list) {
         int varT;
         int varM;
-        int varNumofCalucate;
         String strWire1;
         String strWire2;
 
@@ -181,7 +255,6 @@ class quantum {
         varM = Character.getNumericValue(list.get(INDEX_M).charAt(0));
         strWire1 = list.get(INDEX_WIRE_1);
         strWire2 = list.get(INDEX_WIRE_2);
-        varNumofCalucate = strWire1.length();
         
         if (MSG_DEBUG == true) {
             System.out.println("size : " +list.size());
@@ -212,8 +285,9 @@ class quantum {
             
             // restore data back to the final data.
             for (int count2 = 0; count2 < LENGTH_MATIX; count2++) {
-                outputData[count][count2] = tempData [count2];
+                System.out.print(tempData[count2] + " ");
             }
+            System.out.println();
         }
 
 
@@ -347,22 +421,23 @@ class quantum {
         funcProcessIntroductions (list);
 
         // //print out the list
+        // Test Cases
         // System.out.println(list);
-        double A[][] = { { 1, 2 }, 
-                         { 3, 0 },  
-                        }; 
+        // double A[][] = { { 1, 2 }, 
+        //                  { 3, 0 },  
+        //                 }; 
           
-        double B[][] = { { 1, 0 }, 
-                         { 0, 1 } }; 
+        // double B[][] = { { 1, 0 }, 
+        //                  { 0, 1 } }; 
 
-        double data [] = {0.6962, 0.1234, 0.6962, 0.1234};
+        // double data [] = {0.6962, 0.1234, 0.6962, 0.1234};
 
         // C = Kroneckerproduct(standard_Matrix_H, standard_Matrix_I);  
         // data = matrixtensor (C, data);
-        data = funcSignleStageCal ('H','-', data);
-        for (int count =0; count < data.length; count++) {
-            System.out.println (data[count] + " ");
-        }
+        // data = funcSignleStageCal ('H','-', data);
+        // for (int count =0; count < data.length; count++) {
+        //     System.out.println (data[count] + " ");
+        // }
 
         
         //
